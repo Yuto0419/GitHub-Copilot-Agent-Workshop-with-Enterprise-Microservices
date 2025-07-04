@@ -1577,55 +1577,55 @@ sequenceDiagram
                                                └────────────────┘
 ```
 
-### マイクロサービス別データモデル詳細
+### Microservice Data Model Details
 
-このセクションでは、各マイクロサービスが管理する主要エンティティの詳細な属性とリレーションシップを定義します。
+This section defines the detailed attributes and relationships of the main entities managed by each microservice.
 
-#### ユーザー管理サービス
+#### User Management Service
 
-| エンティティ | 説明 | 主要属性 |
-|------------|------|---------|
-| User | ユーザー基本情報 | id, email, passwordHash, firstName, lastName, phoneNumber, birthDate, createdAt, updatedAt, lastLoginAt, status |
-| Role | ユーザーロール | id, name, description, permissions |
-| Permission | 細粒度の権限 | id, name, description, resource, action |
-| UserPreference | ユーザー設定 | id, userId, language, currency, notificationPreferences, displayPreferences |
-| Address | 配送・請求先住所 | id, userId, addressType(SHIPPING/BILLING), recipient, zipCode, prefecture, city, streetAddress, building, phoneNumber, isDefault |
-| UserActivity | ユーザー行動履歴 | id, userId, activityType, timestamp, details, ipAddress, deviceInfo |
+| Entity | Description | Key Attributes |
+|--------|-------------|----------------|
+| User | Basic user information | id, email, passwordHash, firstName, lastName, phoneNumber, birthDate, createdAt, updatedAt, lastLoginAt, status |
+| Role | User role | id, name, description, permissions |
+| Permission | Fine-grained permission | id, name, description, resource, action |
+| UserPreference | User settings | id, userId, language, currency, notificationPreferences, displayPreferences |
+| Address | Shipping/Billing address | id, userId, addressType(SHIPPING/BILLING), recipient, zipCode, prefecture, city, streetAddress, building, phoneNumber, isDefault |
+| UserActivity | User activity history | id, userId, activityType, timestamp, details, ipAddress, deviceInfo |
 
-#### 在庫管理サービス
+#### Inventory Management Service
 
-| エンティティ | 説明 | 主要属性 |
-|------------|------|---------|
-| Product | 商品基本情報 | id, sku, name, description, brand, categoryId, price, cost, weight, dimensions, isActive, createdAt, updatedAt |
-| Category | 商品カテゴリ | id, name, description, parentId, level, path, imageUrl, isActive |
-| Inventory | 在庫情報 | id, productId, stockQuantity, reservedQuantity, availableQuantity, warehouseId, reorderLevel, updatedAt |
-| Supplier | 仕入先情報 | id, name, contactPerson, email, phone, address, rating, activeContractId |
-| PriceHistory | 価格履歴 | id, productId, price, effectiveFrom, effectiveTo, promotionId |
-| ProductAttribute | 商品属性 | id, productId, attributeName, attributeValue, isFilterable, isSortable |
-| ProductImage | 商品画像 | id, productId, imageUrl, altText, sortOrder, isPrimary |
+| Entity | Description | Key Attributes |
+|--------|-------------|----------------|
+| Product | Basic product information | id, sku, name, description, brand, categoryId, price, cost, weight, dimensions, isActive, createdAt, updatedAt |
+| Category | Product category | id, name, description, parentId, level, path, imageUrl, isActive |
+| Inventory | Inventory information | id, productId, stockQuantity, reservedQuantity, availableQuantity, warehouseId, reorderLevel, updatedAt |
+| Supplier | Supplier information | id, name, contactPerson, email, phone, address, rating, activeContractId |
+| PriceHistory | Price history | id, productId, price, effectiveFrom, effectiveTo, promotionId |
+| ProductAttribute | Product attribute | id, productId, attributeName, attributeValue, isFilterable, isSortable |
+| ProductImage | Product image | id, productId, imageUrl, altText, sortOrder, isPrimary |
 
-#### 販売管理サービス
+#### Sales Management Service
 
-| エンティティ | 説明 | 主要属性 |
-|------------|------|---------|
-| Order | 注文情報 | id, userId, orderDate, status, subtotal, tax, shippingCost, discount, totalAmount, couponId, shippingAddressId, billingAddressId, paymentId, notes |
-| OrderItem | 注文商品明細 | id, orderId, productId, productSnapshot, quantity, unitPrice, discount, tax, subtotal |
-| Shipment | 配送情報 | id, orderId, trackingNumber, carrier, status, shippingDate, estimatedDeliveryDate, actualDeliveryDate |
-| Return | 返品情報 | id, orderId, requestDate, status, reason, approvalDate, refundAmount, returnItemsData |
-| Invoice | 請求書情報 | id, orderId, invoiceNumber, issuedDate, dueDate, paidDate, amount, status |
-| OrderStatus | 注文状態 | id, name, description, sequenceOrder |
-| ShipmentStatus | 配送状態 | id, name, description, sequenceOrder |
+| Entity | Description | Key Attributes |
+|--------|-------------|----------------|
+| Order | Order information | id, userId, orderDate, status, subtotal, tax, shippingCost, discount, totalAmount, couponId, shippingAddressId, billingAddressId, paymentId, notes |
+| OrderItem | Order item details | id, orderId, productId, productSnapshot, quantity, unitPrice, discount, tax, subtotal |
+| Shipment | Shipping information | id, orderId, trackingNumber, carrier, status, shippingDate, estimatedDeliveryDate, actualDeliveryDate |
+| Return | Return information | id, orderId, requestDate, status, reason, approvalDate, refundAmount, returnItemsData |
+| Invoice | Invoice information | id, orderId, invoiceNumber, issuedDate, dueDate, paidDate, amount, status |
+| OrderStatus | Order status | id, name, description, sequenceOrder |
+| ShipmentStatus | Shipping status | id, name, description, sequenceOrder |
 
-#### 支払い・カート処理サービス
+#### Payment & Cart Service
 
-| エンティティ | 説明 | 主要属性 |
-|------------|------|---------|
-| Cart | カート情報 | id, userId, sessionId, createdAt, updatedAt, expiredAt, status |
-| CartItem | カート内商品 | id, cartId, productId, quantity, addedAt, unitPrice, selectedAttributes |
-| Payment | 支払い情報 | id, orderId, amount, currency, method, status, gatewayReference, transactionDate |
-| PaymentMethod | 支払い方法 | id, userId, type, provider, accountReference, isDefault, expiryDate, billingAddressId |
-| Transaction | 決済トランザクション | id, paymentId, type, amount, status, gatewayResponse, createdAt, updatedAt |
-| PaymentStatus | 支払い状態 | id, name, description, isSuccess, isProcessing, isFailed |
+| Entity | Description | Key Attributes |
+|--------|-------------|----------------|
+| Cart | Cart information | id, userId, sessionId, createdAt, updatedAt, expiredAt, status |
+| CartItem | Cart item | id, cartId, productId, quantity, addedAt, unitPrice, selectedAttributes |
+| Payment | Payment information | id, orderId, amount, currency, method, status, gatewayReference, transactionDate |
+| PaymentMethod | Payment method | id, userId, type, provider, accountReference, isDefault, expiryDate, billingAddressId |
+| Transaction | Payment transaction | id, paymentId, type, amount, status, gatewayResponse, createdAt, updatedAt |
+| PaymentStatus | Payment status | id, name, description, isSuccess, isProcessing, isFailed |
 
 #### AI Support Service
 
