@@ -1,0 +1,298 @@
+spring:
+  application:
+    name: user-management-service
+  
+  # Database settings
+  datasource:
+    url: jdbc:postgresql://localhost:5432/skishop_user
+    username: ${DB_USERNAME:skishop_user}
+    password: ${DB_PASSWORD:password}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+      validation-timeout: 5000
+      leak-detection-threshold: 60000
+      auto-commit: false
+  
+  # JPA settings
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        use_sql_comments: true
+        jdbc:
+          batch_size: 20
+          order_inserts: true
+          order_updates: true
+        connection:
+          auto-commit: false
+    open-in-view: false
+  
+  # Flyway settings
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
+  
+  # Redis settings
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+  
+  # Kafka settings (local development)
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: ${KAFKA_BROKERS:localhost:9092}
+          auto-create-topics: true
+      bindings:
+        userRegistered-out-0:
+          destination: user.registered
+          content-type: application/json
+        userUpdated-out-0:
+          destination: user.updated
+          content-type: application/json
+        userDeleted-out-0:
+          destination: user.deleted
+          content-type: application/json
+    
+    # Azure Service Bus Configuration (for production)
+    azure:
+      servicebus:
+        connection-string: ${AZURE_SERVICEBUS_CONNECTION_STRING:}
+        namespace: ${AZURE_SERVICEBUS_NAMESPACE:}
+        processor:
+          max-concurrent-calls: ${AZURE_SERVICEBUS_MAX_CONCURRENT_CALLS:4}
+          max-auto-lock-renew-duration: PT5M
+          session-idle-timeout: PT1M
+        producer:
+          retry:
+            max-retries: ${AZURE_SERVICEBUS_MAX_RETRIES:3}
+            delay: PT1S
+            max-delay: PT30S
+  
+  # Kafka settings
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: user-management-service
+      auto-offset-reset: earliest
+      max-poll-records: 10
+      session-timeout-ms: 30000
+      enable-auto-commit: false
+    producer:
+      retries: 3
+      acks: all
+      compression-type: snappy
+    topics:
+      user-registration: user-registration
+      user-deletion: user-deletion
+      user-management-status: user-management-status
+      fallback: fallback-events
+
+  # Task scheduling settings
+  task:
+    scheduling:
+      pool:
+        size: 5
+
+# Saga settings
+saga:
+  timeout:
+    registration: 30
+    deletion: 60
+  max-retry: 3
+
+# Security settings
+security:
+  encryption:
+    password: ${ENCRYPTION_PASSWORD:default-password}
+  log-masking:
+    enabled: true
+    sensitive-fields:
+      - password
+      - secret
+      - key
+      - token
+      - credential
+  configuration-masking:
+    enabled: true
+    sensitive-keys:
+      - password
+      - secret
+      - connection-string
+
+# Cache settings
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000 # 10分
+      cache-null-values: false
+  
+  # Security settings
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER_URI:http://localhost:8080/auth/realms/skishop}
+          jwk-set-uri: ${JWT_JWK_SET_URI:http://localhost:8080/auth/realms/skishop/protocol/openid_connect/certs}
+
+# Server settings
+server:
+  port: ${PORT:8081}
+  servlet:
+    context-path: /api
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
+    min-response-size: 1024
+  http2:
+    enabled: true
+
+# Management endpoint settings
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        spring.kafka.consumer: true
+        spring.kafka.producer: true
+
+# Logging settings
+logging:
+  level:
+    com.skishop.user: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n"
+
+# Application specific settings
+skishop:
+  # Authentication feature flag
+  authfunc:
+    enable: ${SKISHOP_AUTH_ENABLE:true}
+    
+  user:
+    # Password settings
+    password:
+      min-length: 8
+      max-length: 100
+      require-uppercase: true
+      require-lowercase: true
+      require-digits: true
+      require-special-chars: true
+  
+  # Runtime Configuration
+  runtime:
+    # Event propagation configuration
+    event-propagation-enabled: ${SKISHOP_EVENT_PROPAGATION_ENABLED:false}
+    event-broker-type: ${SKISHOP_EVENT_BROKER_TYPE:redis}
+    event-max-retries: ${SKISHOP_EVENT_MAX_RETRIES:3}
+    event-timeout-ms: ${SKISHOP_EVENT_TIMEOUT_MS:30000}
+    event-redis-key-prefix: ${SKISHOP_EVENT_REDIS_KEY_PREFIX:skishop}
+    event-concurrency: ${SKISHOP_EVENT_CONCURRENCY:4}
+    event-persistence-enabled: ${SKISHOP_EVENT_PERSISTENCE_ENABLED:true}
+    processed-event-retention-days: ${SKISHOP_PROCESSED_EVENT_RETENTION_DAYS:30}
+    debug-mode: ${SKISHOP_DEBUG_MODE:false}
+    environment: ${SKISHOP_ENVIRONMENT:local}
+    
+    # Azure Service Bus configuration
+    azure-servicebus:
+      enabled: ${SKISHOP_AZURE_SERVICEBUS_ENABLED:false}
+      topic-name: ${SKISHOP_AZURE_SERVICEBUS_TOPIC:skishop-events}
+      subscription-name: ${SKISHOP_AZURE_SERVICEBUS_SUBSCRIPTION:user-service-subscription}
+      status-feedback-topic: ${SKISHOP_AZURE_SERVICEBUS_STATUS_FEEDBACK_TOPIC:skishop-status-feedback}
+      dlq-enabled: ${SKISHOP_AZURE_SERVICEBUS_DLQ_ENABLED:true}
+      max-delivery-count: ${SKISHOP_AZURE_SERVICEBUS_MAX_DELIVERY_COUNT:3}
+    
+    # Email verification settings
+    email-verification:
+      token-validity: 24 # hours
+      base-url: ${FRONTEND_BASE_URL:http://localhost:3000}
+      
+    # Account lock settings
+    account-lock:
+      max-failed-attempts: 5
+      lock-duration: 30 # minutes
+    
+    # Session settings
+    session:
+      timeout: 30 # minutes
+      max-concurrent: 1
+      
+    # Notification settings
+    notification:
+      email:
+        enabled: true
+        from: ${EMAIL_FROM:noreply@skishop.com}
+        smtp:
+          host: ${SMTP_HOST:localhost}
+          port: ${SMTP_PORT:587}
+          username: ${SMTP_USERNAME:}
+          password: ${SMTP_PASSWORD:}
+          auth: true
+          starttls: true
+
+# Azure settings (for production)
+azure:
+  keyvault:
+    enabled: ${AZURE_KEYVAULT_ENABLED:false}
+    uri: ${AZURE_KEYVAULT_URI:}
+  
+  application-insights:
+    enabled: ${AZURE_APP_INSIGHTS_ENABLED:false}
+    instrumentation-key: ${AZURE_APP_INSIGHTS_KEY:}
+
+# API documentation settings
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+  packages-to-scan: com.skishop.user.controller
+
+# Resilience4j Configuration
+resilience4j:
+  retry:
+    instances:
+      event-processing:
+        max-attempts: ${SKISHOP_EVENT_MAX_RETRIES:3}
+        wait-duration: 1000ms
+        exponential-backoff-multiplier: 2
+        retry-exceptions:
+          - java.lang.RuntimeException
+          - org.springframework.dao.DataAccessException

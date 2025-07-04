@@ -1,0 +1,207 @@
+{
+  "name": "Ski Shop Microservices",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "devcontainer",
+  "workspaceFolder": "/workspace",
+  "shutdownAction": "stopCompose",
+
+  // Features
+  "features": {
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "21",
+      "installMaven": "true",
+      "installGradle": "false"
+    },
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20",
+      "nodeGypDependencies": true,
+      "installYarnUsingApt": true
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "moby": true,
+      "dockerDashComposeVersion": "v2"
+    },
+    "ghcr.io/devcontainers/features/git:1": {
+      "ppa": true,
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "installDirectlyFromGitHubRelease": true,
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/azure-cli:1": {
+      "installBicep": true,
+      "version": "latest"
+    }
+  },
+
+  // VS Code settings and extensions
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "java.jdt.ls.java.home": "/usr/local/sdkman/candidates/java/21.0.4-ms",
+        "java.configuration.runtimes": [
+          {
+            "name": "JavaSE-21",
+            "path": "/usr/local/sdkman/candidates/java/21.0.4-ms"
+          }
+        ],
+        "maven.executable.path": "/usr/local/sdkman/candidates/maven/current/bin/mvn",
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "terminal.integrated.profiles.linux": {
+          "bash": {
+            "path": "/bin/bash"
+          }
+        },
+        "files.exclude": {
+          "**/target": true,
+          "**/.classpath": true,
+          "**/.project": true,
+          "**/.settings": true,
+          "**/.factorypath": true
+        },
+        "java.compile.nullAnalysis.mode": "automatic",
+        "java.import.generatesMetadataFilesAtProjectRoot": true,
+        "spring-boot.ls.problem.application-properties.enabled": true,
+        "docker.defaultRegistry": "localhost:5000"
+      },
+      "extensions": [
+        // Java Development
+        "vscjava.vscode-java-pack",
+        "vscjava.vscode-spring-initializr",
+        "vscjava.vscode-spring-boot-dashboard",
+        "pivotal.vscode-spring-boot",
+        "vmware.vscode-spring-boot",
+        "vscjava.vscode-maven",
+        
+        // Testing
+        "vscjava.vscode-java-test",
+        "hbenl.vscode-test-explorer",
+        "formulahendry.code-runner",
+        
+        // Docker & Containers
+        "ms-azuretools.vscode-docker",
+        "ms-vscode-remote.remote-containers",
+        
+        // Azure Development
+        "ms-vscode.vscode-azure-account",
+        "ms-azuretools.vscode-azureappservice",
+        "ms-azuretools.vscode-azurefunctions",
+        "ms-azuretools.vscode-azureresourcegroups",
+        "ms-azuretools.vscode-bicep",
+        
+        // Database
+        "ms-mssql.mssql",
+        "cweijan.vscode-postgresql-client2",
+        "mongodb.mongodb-vscode",
+        
+        // API Development
+        "humao.rest-client",
+        "42crunch.vscode-openapi",
+        "ms-vscode.vscode-json",
+        
+        // Git & GitHub
+        "github.vscode-pull-request-github",
+        "github.copilot",
+        "github.copilot-chat",
+        "eamodio.gitlens",
+        
+        // Utilities
+        "ms-vscode.vscode-yaml",
+        "redhat.vscode-xml",
+        "ms-vscode.vscode-markdown-preview-enhanced",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "ms-vscode.vscode-thunder-client"
+      ]
+    }
+  },
+
+  // Port forwarding for microservices
+  "forwardPorts": [
+    8080, // Authentication Service
+    8081, // User Management Service
+    8082, // Inventory Management Service
+    8083, // Sales Management Service
+    8084, // Payment & Cart Service
+    8085, // Point Service
+    8086, // Coupon Service
+    8087, // AI Support Service
+    8090, // API Gateway
+    5432, // PostgreSQL
+    6379, // Redis
+    9092, // Kafka
+    9200, // Elasticsearch
+    3000, // Frontend (if needed)
+    9090, // Prometheus
+    3001  // Grafana
+  ],
+
+  "portsAttributes": {
+    "8090": {
+      "label": "API Gateway",
+      "onAutoForward": "notify"
+    },
+    "8080": {
+      "label": "Authentication Service",
+      "onAutoForward": "silent"
+    },
+    "8081": {
+      "label": "User Management Service",
+      "onAutoForward": "silent"
+    },
+    "8082": {
+      "label": "Inventory Management Service",
+      "onAutoForward": "silent"
+    },
+    "8083": {
+      "label": "Sales Management Service",
+      "onAutoForward": "silent"
+    },
+    "8084": {
+      "label": "Payment & Cart Service",
+      "onAutoForward": "silent"
+    },
+    "8085": {
+      "label": "Point Service",
+      "onAutoForward": "silent"
+    },
+    "8086": {
+      "label": "Coupon Service",
+      "onAutoForward": "silent"
+    },
+    "8087": {
+      "label": "AI Support Service",
+      "onAutoForward": "silent"
+    },
+    "5432": {
+      "label": "PostgreSQL Database",
+      "onAutoForward": "silent"
+    }
+  },
+
+  // Lifecycle commands
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "postStartCommand": "bash .devcontainer/post-start.sh",
+
+  // Environment variables
+  "containerEnv": {
+    "SPRING_PROFILES_ACTIVE": "dev",
+    "JAVA_TOOL_OPTIONS": "-Dspring.jpa.show-sql=true -Dlogging.level.org.springframework.web=DEBUG",
+    "MAVEN_OPTS": "-Xmx1024m",
+    "DOCKER_BUILDKIT": "1"
+  },
+
+  // Mount points
+  "mounts": [
+    "source=ski-shop-maven-cache,target=/root/.m2,type=volume",
+    "source=ski-shop-node-modules,target=/workspace/node_modules,type=volume"
+  ],
+
+  // User configuration
+  "remoteUser": "root",
+  
+  // Additional capabilities
+  "capAdd": ["SYS_PTRACE"],
+  "securityOpt": ["seccomp=unconfined"]
+}

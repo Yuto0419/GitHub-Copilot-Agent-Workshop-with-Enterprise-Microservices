@@ -1,0 +1,101 @@
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.cloud.azure.autoconfigure.aad.AadAutoConfiguration
+      - org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
+  
+  # Database settings (H2 for testing)
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  
+  # JPA settings
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        '[format_sql]': false
+  
+  h2:
+    console:
+      enabled: true
+  
+  # Azure Active Directory settings (disabled for testing)
+  cloud:
+    azure:
+      active-directory:
+        enabled: false
+  
+  # OAuth2 settings (disabled for testing)
+  security:
+    oauth2:
+      client:
+        registration:
+          azure:
+            client-id: test-client-id
+            client-secret: test-client-secret
+            scope: openid,profile
+        provider:
+          azure:
+            issuer-uri: http://localhost:8080/test-issuer
+        
+  # Redis settings for data (disabled for testing)
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2000ms
+      jedis:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+  
+  # Kafka settings (disabled for testing)
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: auth-service-test
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+
+# JWT settings (secret key 512 bits or more)
+jwt:
+  secret: test-secret-key-for-jwt-that-is-long-enough-for-hs512-algorithm-and-secure-testing-with-additional-length-to-meet-512-bit-requirement
+  expiration: 3600000 # 1 hour
+  refresh-expiration: 604800000 # 7 days
+
+# Application settings
+app:
+  security:
+    password-min-length: 8
+    max-login-attempts: 5
+    lockout-duration: 900000 # 15 minutes
+    session-timeout: 1800000 # 30 minutes
+  
+  mfa:
+    enabled: false # Disabled for testing
+    window-size: 3
+    issuer: "SkiShop Test"
+
+# Logging settings
+logging:
+  level:
+    '[com.skishop.auth]': DEBUG
+    '[org.springframework.security]': DEBUG
+    '[org.springframework.web]': INFO
+    '[org.springframework.kafka]': WARN
+    '[org.springframework.data.redis]': WARN
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"

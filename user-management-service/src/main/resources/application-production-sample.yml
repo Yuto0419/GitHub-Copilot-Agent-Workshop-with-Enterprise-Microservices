@@ -1,0 +1,66 @@
+# Azure Service Bus settings sample
+# For production environment - place in application-production.yml
+
+spring:
+  profiles:
+    active: production
+  cloud:
+    azure:
+      servicebus:
+        namespace: ${AZURE_SERVICEBUS_NAMESPACE:your-servicebus-namespace}
+        connection-string: ${AZURE_SERVICEBUS_CONNECTION_STRING:}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        '[format_sql]': false
+
+skishop:
+  runtime:
+    # Environment settings
+    environment: production
+    event-propagation-enabled: true
+    event-broker-type: azure-servicebus
+    event-max-retries: 3
+    event-timeout-ms: 30000
+    event-concurrency: 4
+    
+    # Azure Service Bus settings
+    azure-servicebus:
+      enabled: ${SKISHOP_AZURE_SERVICEBUS_ENABLED:true}
+      topic-name: ${SKISHOP_AZURE_SERVICEBUS_TOPIC_NAME:skishop-events-prod}
+      subscription-name: ${SKISHOP_AZURE_SERVICEBUS_SUBSCRIPTION_NAME:user-service-subscription}
+      status-feedback-topic: ${SKISHOP_AZURE_SERVICEBUS_STATUS_TOPIC:skishop-status-feedback-prod}
+      max-concurrent-calls: ${AZURE_SERVICEBUS_MAX_CONCURRENT_CALLS:4}
+      max-retries: ${AZURE_SERVICEBUS_MAX_RETRIES:3}
+      prefetch-count: ${AZURE_SERVICEBUS_PREFETCH_COUNT:10}
+
+# Actuator settings
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+      probes:
+        enabled: true
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+logging:
+  level:
+    '[com.skishop]': INFO
+    '[org.springframework]': WARN
+    '[com.azure]': INFO

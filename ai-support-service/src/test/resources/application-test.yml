@@ -1,0 +1,33 @@
+# Test profile specific configuration
+spring:
+  application:
+    name: ai-support-service-test
+    
+  # Disable all database auto-configurations for tests
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
+  
+  # Simple cache for testing
+  cache:
+    type: simple
+  
+  # Test security configuration (minimal)
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/skishop
+
+# Logging for tests
+logging:
+  level:
+    com.skishop.ai: DEBUG
+    org.springframework.security: WARN
+    org.springframework.boot: WARN
+    root: WARN

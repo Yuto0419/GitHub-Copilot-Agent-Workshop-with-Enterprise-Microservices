@@ -1,0 +1,54 @@
+# Test configuration
+spring:
+  application:
+    name: ai-support-service-test
+  
+  main:
+    allow-bean-definition-overriding: true
+    
+  # Disable JPA auto-configuration for tests
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
+  
+  # Mock cache configuration
+  cache:
+    type: simple
+  
+  # Disable external services for tests
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/skishop
+  
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: localhost:9092
+
+# Test logging configuration
+logging:
+  level:
+    com.skishop.ai: DEBUG
+    org.springframework: WARN
+    org.mongodb: WARN
+
+# Azure OpenAI Test Configuration (mocked)
+azure:
+  openai:
+    api-key: test-key
+    endpoint: https://test.openai.azure.com/
+    deployment-name: gpt-4
+    chat-deployment-name: gpt-4
+    embedding-deployment-name: text-embedding-3-small
+
+# Test server configuration
+server:
+  port: 0  # Random port for tests
