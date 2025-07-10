@@ -24,6 +24,11 @@ public class MfaSetupResponse {
     private List<String> recoveryCodes;
     private String issuer;
     private String accountName;
+    private String mfaType;
+    
+    // Azure Entra ID specific fields
+    private String azureAuthenticatorSetupUrl;
+    private String azurePollingKey;
     
     public static MfaSetupResponse success(String secretKey, String qrCodeUrl, String qrCodeBase64, List<String> recoveryCodes, String issuer, String accountName) {
         return MfaSetupResponse.builder()
@@ -33,6 +38,17 @@ public class MfaSetupResponse {
                 .recoveryCodes(recoveryCodes)
                 .issuer(issuer)
                 .accountName(accountName)
+                .mfaType("TOTP")
+                .build();
+    }
+    
+    public static MfaSetupResponse azureSuccess(String azureAuthenticatorSetupUrl, String azurePollingKey, List<String> recoveryCodes, String accountName) {
+        return MfaSetupResponse.builder()
+                .azureAuthenticatorSetupUrl(azureAuthenticatorSetupUrl)
+                .azurePollingKey(azurePollingKey)
+                .recoveryCodes(recoveryCodes)
+                .accountName(accountName)
+                .mfaType("AZURE_ENTRA_ID")
                 .build();
     }
     
@@ -43,4 +59,7 @@ public class MfaSetupResponse {
     public List<String> getRecoveryCodes() { return recoveryCodes; }
     public String getIssuer() { return issuer; }
     public String getAccountName() { return accountName; }
+    public String getMfaType() { return mfaType; }
+    public String getAzureAuthenticatorSetupUrl() { return azureAuthenticatorSetupUrl; }
+    public String getAzurePollingKey() { return azurePollingKey; }
 }

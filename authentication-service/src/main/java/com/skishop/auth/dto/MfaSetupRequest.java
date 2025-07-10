@@ -19,12 +19,20 @@ public class MfaSetupRequest {
     private String accountName;
     private String issuer;
     
+    // MFA type (TOTP or AZURE_ENTRA_ID)
+    private String mfaType = "TOTP"; // Default to TOTP for backward compatibility
+    
     // Manual getter methods since Lombok may not be working properly
     public String getUserId() { return userId; }
     public String getAccountName() { return accountName; }
     public String getIssuer() { return issuer; }
+    public String getMfaType() { return mfaType; }
     
     public UUID getUserIdAsUUID() {
         return UUID.fromString(userId);
+    }
+    
+    public MfaType getMfaTypeEnum() {
+        return MfaType.fromString(mfaType);
     }
 }

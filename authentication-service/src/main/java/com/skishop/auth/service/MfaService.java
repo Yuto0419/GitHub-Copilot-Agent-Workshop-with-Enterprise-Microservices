@@ -8,7 +8,9 @@ import com.skishop.auth.dto.LoginResponse;
 import com.skishop.auth.dto.MfaSetupRequest;
 import com.skishop.auth.dto.MfaSetupResponse;
 import com.skishop.auth.dto.MfaVerificationRequest;
+import com.skishop.auth.dto.MfaType;
 import com.skishop.auth.entity.UserMFA;
+import com.skishop.auth.service.azure.AzureMfaService;
 import com.warrenstrange.googleauth.GoogleAuthenticator;
 import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
 import com.warrenstrange.googleauth.GoogleAuthenticatorQRGenerator;
@@ -27,7 +29,7 @@ import java.util.UUID;
 
 /**
  * MFA (Multi-Factor Authentication) Service
- * Implements two-factor authentication using TOTP (Time-based One-Time Password)
+ * Implements two-factor authentication using TOTP (Time-based One-Time Password) and Azure Entra ID MFA
  */
 @Service
 @RequiredArgsConstructor
@@ -36,6 +38,7 @@ public class MfaService {
 
     private final EntityManager entityManager;
     private final GoogleAuthenticator googleAuthenticator;
+    private final AzureMfaService azureMfaService;
     
     // Manual log field since Lombok @Slf4j may not be working properly
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(MfaService.class);
@@ -46,7 +49,7 @@ public class MfaService {
     private static final int RECOVERY_CODE_LENGTH = 8;
 
     /**
-     * Verify MFA code using TOTP
+     * Verify MFA code using TOTP or Azure Entra ID
      */
     public boolean verifyMfaCode(UUID userId, String code) {
         try {
@@ -71,20 +74,20 @@ public class MfaService {
                 return true;
             }
 
-            // Verify TOTP code using GoogleAuth library
-            try {
-                int numericCode = Integer.parseInt(code);
-                boolean isValid = googleAuthenticator.authorize(userMFA.getSecretKey(), numericCode);
-                
-                if (isValid) {
-                    log.info("MFA code verified for user: {}", userId);
-                    userMFA.updateLastUsed();
-                    entityManager.merge(userMFA);
-                    return true;
-                }
-            } catch (NumberFormatException e) {
-                log.warn("Invalid MFA code format for user {}: {}", userId, e.getMessage());
-                return false;
+            // Route to appropriate MFA verification based on type
+            boolean isValid = false;
+            if (MfaType.AZURE_ENTRA_ID.getValue().equals(userMFA.getMfaType())) {
+                isValid = verifyAzureEntraIdMfa(userMFA, code);
+            } else {
+                // Default to TOTP verification
+                isValid = verifyTotpMfa(userMFA, code);
+            }
+
+            if (isValid) {
+                log.info("MFA code verified for user: {} using {}", userId, userMFA.getMfaType());
+                userMFA.updateLastUsed();
+                entityManager.merge(userMFA);
+                return true;
             }
 
             log.warn("Invalid MFA code for user: {}", userId);
@@ -92,6 +95,33 @@ public class MfaService {
 
         } catch (Exception e) {
             log.error("Error verifying MFA code for user {}: {}", userId, e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Verify TOTP MFA code
+     */
+    private boolean verifyTotpMfa(UserMFA userMFA, String code) {
+        try {
+            int numericCode = Integer.parseInt(code);
+            return googleAuthenticator.authorize(userMFA.getSecretKey(), numericCode);
+        } catch (NumberFormatException e) {
+            log.warn("Invalid TOTP code format for user {}: {}", userMFA.getUserId(), e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Verify Azure Entra ID MFA code
+     */
+    private boolean verifyAzureEntraIdMfa(UserMFA userMFA, String code) {
+        try {
+            // Use the secret key as user principal name for Azure MFA
+            String userPrincipalName = userMFA.getSecretKey();
+            return azureMfaService.verifyAzureMfa(userPrincipalName, code);
+        } catch (Exception e) {
+            log.error("Error verifying Azure Entra ID MFA for user {}: {}", userMFA.getUserId(), e.getMessage());
             return false;
         }
     }
@@ -115,52 +145,97 @@ public class MfaService {
     }
 
     /**
-     * Set up MFA for a user with QR code generation
+     * Set up MFA for a user with QR code generation or Azure Entra ID setup
      */
     public MfaSetupResponse setupMfa(MfaSetupRequest request) {
         try {
             UUID userId = request.getUserIdAsUUID();
             String accountName = request.getAccountName() != null ? request.getAccountName() : "user@skishop.com";
             String issuer = request.getIssuer() != null ? request.getIssuer() : DEFAULT_ISSUER;
-            
-            // Generate secret key using GoogleAuth
-            GoogleAuthenticatorKey key = googleAuthenticator.createCredentials();
-            String secretKey = key.getKey();
+            MfaType mfaType = request.getMfaTypeEnum();
             
             // Generate recovery codes
             List<String> recoveryCodes = generateRecoveryCodes();
             
-            // Create or update UserMFA entity
-            UserMFA userMFA = UserMFA.builder()
-                .id(UUID.randomUUID())
-                .userId(userId)
-                .mfaType("TOTP")
-                .secretKey(secretKey)
-                .backupCodes(recoveryCodes)
-                .isEnabled(true)
-                .build();
-            
-            entityManager.persist(userMFA);
-            
-            // Generate QR code URL and Base64 image
-            String qrCodeUrl = GoogleAuthenticatorQRGenerator.getOtpAuthURL(issuer, accountName, key);
-            String qrCodeBase64 = generateQRCodeBase64(qrCodeUrl);
-            
-            log.info("MFA setup completed for user: {}", userId);
-            
-            return MfaSetupResponse.success(
-                secretKey, 
-                qrCodeUrl, 
-                qrCodeBase64, 
-                recoveryCodes, 
-                issuer, 
-                accountName
-            );
+            if (mfaType == MfaType.AZURE_ENTRA_ID) {
+                return setupAzureEntraIdMfa(userId, accountName, recoveryCodes);
+            } else {
+                return setupTotpMfa(userId, accountName, issuer, recoveryCodes);
+            }
             
         } catch (Exception e) {
             log.error("Error setting up MFA for user {}: {}", request.getUserId(), e.getMessage());
             throw new RuntimeException("Failed to setup MFA");
         }
+    }
+
+    /**
+     * Set up TOTP MFA
+     */
+    private MfaSetupResponse setupTotpMfa(UUID userId, String accountName, String issuer, List<String> recoveryCodes) {
+        // Generate secret key using GoogleAuth
+        GoogleAuthenticatorKey key = googleAuthenticator.createCredentials();
+        String secretKey = key.getKey();
+        
+        // Create or update UserMFA entity
+        UserMFA userMFA = UserMFA.builder()
+            .id(UUID.randomUUID())
+            .userId(userId)
+            .mfaType("TOTP")
+            .secretKey(secretKey)
+            .backupCodes(recoveryCodes)
+            .isEnabled(true)
+            .build();
+        
+        entityManager.persist(userMFA);
+        
+        // Generate QR code URL and Base64 image
+        String qrCodeUrl = GoogleAuthenticatorQRGenerator.getOtpAuthURL(issuer, accountName, key);
+        String qrCodeBase64 = generateQRCodeBase64(qrCodeUrl);
+        
+        log.info("TOTP MFA setup completed for user: {}", userId);
+        
+        return MfaSetupResponse.success(
+            secretKey, 
+            qrCodeUrl, 
+            qrCodeBase64, 
+            recoveryCodes, 
+            issuer, 
+            accountName
+        );
+    }
+
+    /**
+     * Set up Azure Entra ID MFA
+     */
+    private MfaSetupResponse setupAzureEntraIdMfa(UUID userId, String accountName, List<String> recoveryCodes) {
+        // Setup Azure Entra ID MFA
+        AzureMfaService.AzureMfaSetupResult azureResult = azureMfaService.setupAzureMfa(accountName);
+        
+        if (!azureResult.isSuccess()) {
+            throw new RuntimeException("Failed to setup Azure Entra ID MFA: " + azureResult.getErrorMessage());
+        }
+        
+        // Create or update UserMFA entity
+        UserMFA userMFA = UserMFA.builder()
+            .id(UUID.randomUUID())
+            .userId(userId)
+            .mfaType("AZURE_ENTRA_ID")
+            .secretKey(accountName) // Store user principal name
+            .backupCodes(recoveryCodes)
+            .isEnabled(true)
+            .build();
+        
+        entityManager.persist(userMFA);
+        
+        log.info("Azure Entra ID MFA setup completed for user: {}", userId);
+        
+        return MfaSetupResponse.azureSuccess(
+            azureResult.getSetupUrl(),
+            azureResult.getPollingKey(),
+            recoveryCodes,
+            accountName
+        );
     }
 
     /**
