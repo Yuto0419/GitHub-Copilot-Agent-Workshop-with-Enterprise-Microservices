@@ -32,8 +32,8 @@ spring:
   # PostgreSQL settings
   datasource:
     url: jdbc:postgresql://localhost:5432/skishop_inventory
-    username: postgres
-    password: postgres
+    username: ${DB_USERNAME:skishop_user}
+    password: ${DB_PASSWORD:skishop_password}
     driver-class-name: org.postgresql.Driver
     hikari:
       connection-timeout: 20000

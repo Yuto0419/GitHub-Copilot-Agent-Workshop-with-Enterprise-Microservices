@@ -1,3 +1,6 @@
+server:
+  port: 8090
+
 spring:
   application:
     name: api-gateway
@@ -77,12 +80,6 @@ spring:
   # Note: 'cloud.stream' is integrated into the 'cloud' section
 
 # Server settings
-server:
-  port: ${PORT:8090}
-  compression:
-    enabled: true
-    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
-    min-response-size: 1024
 
 # Management endpoint settings
 management:

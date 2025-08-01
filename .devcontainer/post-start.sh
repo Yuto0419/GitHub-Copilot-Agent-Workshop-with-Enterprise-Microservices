@@ -18,10 +18,12 @@ for service in "${services[@]}"; do
     host=$(echo $service | cut -d: -f1)
     port=$(echo $service | cut -d: -f2)
     
-    if nc -z $host $port; then
+    if command -v nc &> /dev/null && nc -z $host $port; then
+        echo "✅ $service is responding"
+    elif command -v telnet &> /dev/null && timeout 3 telnet $host $port < /dev/null > /dev/null 2>&1; then
         echo "✅ $service is responding"
     else
-        echo "⚠️  $service is not responding"
+        echo "⚠️  $service is not responding or tool not available"
     fi
 done
 

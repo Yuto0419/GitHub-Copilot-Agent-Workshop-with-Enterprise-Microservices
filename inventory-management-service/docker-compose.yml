@@ -1,0 +1,36 @@
+services:
+  # Inventory Management Service - uses shared infrastructure services
+  inventory-management-service:
+    build: .
+    container_name: inventory-management-service
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      
+      # Database configuration - using shared PostgreSQL
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/skishop_inventory
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      
+      # Redis configuration - using shared Redis
+      SPRING_DATA_REDIS_HOST: host.docker.internal
+      SPRING_DATA_REDIS_PORT: 6379
+      
+      # Kafka configuration - using shared Kafka
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: host.docker.internal:9092
+      
+      # JVM configuration
+      JAVA_OPTS: "-Xms256m -Xmx1g"
+    volumes:
+      - ./logs:/app/logs
+    network_mode: host
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+# Inventory Management Service uses shared infrastructure services
+# PostgreSQL, Redis, Kafka, etc. are provided by ../.devcontainer/docker-compose.yml
+# This service connects to shared services via host network

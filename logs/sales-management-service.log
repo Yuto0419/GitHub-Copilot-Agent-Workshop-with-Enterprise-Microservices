@@ -1,0 +1,17 @@
+Picked up JAVA_TOOL_OPTIONS: -Dspring.jpa.show-sql=true -Dlogging.level.org.springframework.web=DEBUG
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------< com.skishop:sales-management-service >----------------
+[INFO] Building Sales Management Service 1.0.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> spring-boot:3.5.3:run (default-cli) > test-compile @ sales-management-service >>>
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ sales-management-service ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ sales-management-service ---
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 52 source files with javac [debug release 21] to target/classes

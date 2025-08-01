@@ -37,9 +37,9 @@ spring:
 
   # Database Configuration
   datasource:
-    url: ${DB_URL:jdbc:postgresql://auth-postgres:5432/skishop_auth}
-    username: ${DB_USERNAME:auth_user}
-    password: ${DB_PASSWORD:auth_password}
+    url: ${DB_URL:jdbc:postgresql://postgres:5432/skishop_auth}
+    username: ${DB_USERNAME:skishop_user}
+    password: ${DB_PASSWORD:skishop_password}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 20

@@ -1,4 +1,4 @@
-FROM openjdk:21-jre-slim
+FROM eclipse-temurin:21-jre-alpine
 
 LABEL maintainer="Azure SkiShop Team"
 LABEL version="1.0.0"
@@ -10,12 +10,12 @@ WORKDIR /app
 # Copy application JAR file
 COPY target/frontend-service-*.jar app.jar
 
-# Expose port 8080
-EXPOSE 8080
+# Expose port 3000
+EXPOSE 3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8080/actuator/health || exit 1
+    CMD curl -f http://localhost:3000/actuator/health || exit 1
 
 # Run application
 ENTRYPOINT ["java", "-jar", "app.jar"]

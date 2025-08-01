@@ -1,47 +1,40 @@
 # Multi-stage Dockerfile for Payment Cart Service
 
 # Stage 1: Build stage
-FROM maven:3.9.6-openjdk-21-slim AS build
+FROM maven:3.9.11-eclipse-temurin-21 AS build
 
 WORKDIR /app
 
 # Copy Maven files first for better layer caching
 COPY pom.xml ./
-COPY .mvn .mvn
-COPY mvnw ./
-
-# Make mvnw executable
-RUN chmod +x mvnw
 
 # Download dependencies (this layer will be cached if pom.xml doesn't change)
-RUN ./mvnw dependency:go-offline -B
+RUN mvn dependency:go-offline -B
 
 # Copy source code
 COPY src ./src
 
 # Build the application
-RUN ./mvnw clean package -DskipTests -B
+RUN mvn clean package -DskipTests -B
 
 # Stage 2: Runtime stage
-FROM openjdk:21-jdk-slim
+FROM eclipse-temurin:21-jre-alpine
 
-# Create app user for security
-RUN addgroup --system app && adduser --system --group app
+LABEL maintainer="Azure SkiShop Team"
+LABEL version="1.0.0"
+LABEL description="Azure SkiShop Inventory Management Service"
+
+# Install curl for health checks
+RUN apk add --no-cache curl
 
 # Set working directory
 WORKDIR /app
-
-# Install curl for health checks
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 # Copy the built JAR from build stage
 COPY --from=build /app/target/payment-cart-service-*.jar app.jar
 
 # Create logs directory
-RUN mkdir -p logs && chown -R app:app /app
-
-# Switch to app user
-USER app
+RUN mkdir -p logs 
 
 # Expose the port
 EXPOSE 8084

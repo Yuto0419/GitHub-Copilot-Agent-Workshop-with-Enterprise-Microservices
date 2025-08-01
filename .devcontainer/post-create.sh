@@ -5,44 +5,60 @@ echo "🚀 Setting up Ski Shop Microservices development environment..."
 
 # Wait for services to be ready
 echo "⏳ Waiting for infrastructure services to start..."
-sleep 10
+sleep 20
 
 # Check service availability
 echo "🔍 Checking service health..."
 
 # Check PostgreSQL
 if command -v pg_isready &> /dev/null; then
-    until pg_isready -h postgres -p 5432 -U skishop_user -d skishop; do
-        echo "Waiting for PostgreSQL..."
-        sleep 2
+    echo "Checking PostgreSQL connection..."
+    for i in {1..30}; do
+        if pg_isready -h postgres -p 5432 -U skishop_user -d skishop > /dev/null 2>&1; then
+            echo "✅ PostgreSQL is ready"
+            break
+        fi
+        echo "Waiting for PostgreSQL... ($i/30)"
+        sleep 3
     done
-    echo "✅ PostgreSQL is ready"
 fi
 
 # Check Redis
 if command -v redis-cli &> /dev/null; then
-    until redis-cli -h redis -p 6379 -a redis_password ping > /dev/null 2>&1; do
-        echo "Waiting for Redis..."
-        sleep 2
+    echo "Checking Redis connection..."
+    for i in {1..30}; do
+        if redis-cli -h redis -p 6379 -a redis_password ping > /dev/null 2>&1; then
+            echo "✅ Redis is ready"
+            break
+        fi
+        echo "Waiting for Redis... ($i/30)"
+        sleep 3
     done
-    echo "✅ Redis is ready"
 fi
 
 # Check Kafka
 if command -v kafka-topics &> /dev/null; then
-    until kafka-topics --bootstrap-server kafka:9092 --list > /dev/null 2>&1; do
-        echo "Waiting for Kafka..."
+    echo "Checking Kafka connection..."
+    for i in {1..30}; do
+        if kafka-topics --bootstrap-server kafka:9092 --list > /dev/null 2>&1; then
+            echo "✅ Kafka is ready"
+            break
+        fi
+        echo "Waiting for Kafka... ($i/30)"
         sleep 5
     done
-    echo "✅ Kafka is ready"
 fi
 
 # Check Elasticsearch
-until curl -f http://elasticsearch:9200/_cluster/health > /dev/null 2>&1; do
-    echo "Waiting for Elasticsearch..."
+echo "Checking Elasticsearch connection..."
+for i in {1..30}; do
+    if curl -f http://elasticsearch:9200/_cluster/health > /dev/null 2>&1; then
+        echo "✅ Elasticsearch is ready"
+        break
+    fi
+    echo "Waiting for Elasticsearch... ($i/30)"
     sleep 5
 done
-echo "✅ Elasticsearch is ready"
 
 # Download dependencies for all modules
 echo "📦 Downloading Maven dependencies..."

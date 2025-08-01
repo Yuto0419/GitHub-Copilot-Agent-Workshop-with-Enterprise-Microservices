@@ -2,17 +2,17 @@
 -- Creates multiple databases for different services
 
 -- Create databases for each microservice
-CREATE DATABASE IF NOT EXISTS skishop_auth;
-CREATE DATABASE IF NOT EXISTS skishop_user;
-CREATE DATABASE IF NOT EXISTS skishop_inventory;
-CREATE DATABASE IF NOT EXISTS skishop_sales;
-CREATE DATABASE IF NOT EXISTS skishop_payment;
-CREATE DATABASE IF NOT EXISTS skishop_point;
-CREATE DATABASE IF NOT EXISTS skishop_coupon;
+SELECT 'CREATE DATABASE skishop_auth' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'skishop_auth')\gexec
+SELECT 'CREATE DATABASE skishop_user_db' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'skishop_user_db')\gexec
+SELECT 'CREATE DATABASE skishop_inventory' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'skishop_inventory')\gexec
+SELECT 'CREATE DATABASE skishop_sales' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'skishop_sales')\gexec
+SELECT 'CREATE DATABASE skishop_payment' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'skishop_payment')\gexec
+SELECT 'CREATE DATABASE skishop_point' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'skishop_point')\gexec
+SELECT 'CREATE DATABASE skishop_coupon' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'skishop_coupon')\gexec
 
 -- Grant permissions
 GRANT ALL PRIVILEGES ON DATABASE skishop_auth TO skishop_user;
-GRANT ALL PRIVILEGES ON DATABASE skishop_user TO skishop_user;
+GRANT ALL PRIVILEGES ON DATABASE skishop_user_db TO skishop_user;
 GRANT ALL PRIVILEGES ON DATABASE skishop_inventory TO skishop_user;
 GRANT ALL PRIVILEGES ON DATABASE skishop_sales TO skishop_user;
 GRANT ALL PRIVILEGES ON DATABASE skishop_payment TO skishop_user;

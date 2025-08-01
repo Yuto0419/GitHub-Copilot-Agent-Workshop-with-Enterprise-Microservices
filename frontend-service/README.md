@@ -61,7 +61,7 @@ Web UI interface for Ski Shop E-commerce Platform
 | Variable Name | Description | Default Value |
 |---------------|-------------|---------------|
 | `SPRING_PROFILES_ACTIVE` | Spring Boot active profile | `local` |
-| `API_GATEWAY_URL` | API Gateway service URL | `http://api-gateway:8080` |
+| `API_GATEWAY_URL` | API Gateway service URL | `http://api-gateway:8090` |
 | `SKISHOP_AUTH_ENABLED` | Enable/disable authentication | `false` |
 | `AZURE_CLIENT_ID` | Azure Client ID for OAuth | - |
 | `AZURE_CLIENT_SECRET` | Azure Client Secret for OAuth | - |
@@ -98,7 +98,7 @@ mvn clean install
 Create a `.env` file or set environment variables:
 
 ```bash
-export API_GATEWAY_URL="http://localhost:8081"
+export API_GATEWAY_URL="http://localhost:8090"
 export SKISHOP_AUTH_ENABLED=false
 ```
 
@@ -119,9 +119,9 @@ mvn spring-boot:run
 
 1. **Access via Browser**
 
-- **Frontend UI**: [http://localhost:8080](http://localhost:8080)
-- **Swagger UI**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
-- **Health Check**: [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health)
+- **Frontend UI**: [http://localhost:3000](http://localhost:3000)
+- **Swagger UI**: [http://localhost:3000/swagger-ui.html](http://localhost:3000/swagger-ui.html)
+- **Health Check**: [http://localhost:3000/actuator/health](http://localhost:3000/actuator/health)
 
 ### Run Microservices with Docker Compose
 
@@ -133,8 +133,8 @@ docker-compose up --build
 
 1. **Access via Browser**
 
-- **Frontend Service**: [http://localhost:8080](http://localhost:8080)
-- **Swagger UI**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+- **Frontend Service**: [http://localhost:3000](http://localhost:3000)
+- **Swagger UI**: [http://localhost:3000/swagger-ui.html](http://localhost:3000/swagger-ui.html)
 
 ## Production Environment Setup and Verification
 
@@ -239,7 +239,7 @@ az containerapp create \
   --resource-group $RESOURCE_GROUP \
   --environment "env-ski-shop" \
   --image "$CONTAINER_REGISTRY.azurecr.io/frontend-service:latest" \
-  --target-port 8080 \
+  --target-port 3000 \
   --ingress 'external' \
   --env-vars \
     SPRING_PROFILES_ACTIVE="production" \
@@ -255,13 +255,13 @@ echo "Deployment completed. Check the Azure portal for the application URL."
 
 ### 1. Home Page Access
 
-1. Open a web browser and navigate to [http://localhost:8080](http://localhost:8080)
+1. Open a web browser and navigate to [http://localhost:3000](http://localhost:3000)
 2. Verify the home page loads with product categories and featured products
 3. Verify the navigation menu functions correctly
 
 ### 2. Product Browsing
 
-1. Navigate to [http://localhost:8080/products](http://localhost:8080/products)
+1. Navigate to [http://localhost:3000/products](http://localhost:3000/products)
 2. Verify products are displayed in a grid format
 3. Test filtering by category and sorting options
 4. Test search functionality with various queries

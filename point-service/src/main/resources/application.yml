@@ -6,9 +6,9 @@ spring:
     name: point-service
   
   datasource:
-    url: jdbc:postgresql://localhost:5432/skishop_points
-    username: ${DB_USERNAME:skishop}
-    password: ${DB_PASSWORD:skishop123}
+    url: jdbc:postgresql://localhost:5432/skishop_point
+    username: ${DB_USERNAME:skishop_user}
+    password: ${DB_PASSWORD:skishop_password}
     driver-class-name: org.postgresql.Driver
     
   jpa:

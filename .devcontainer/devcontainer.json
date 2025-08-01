@@ -39,14 +39,14 @@
   "customizations": {
     "vscode": {
       "settings": {
-        "java.jdt.ls.java.home": "/usr/local/sdkman/candidates/java/21.0.4-ms",
+        "java.jdt.ls.java.home": "/usr/lib/jvm/msopenjdk-current",
         "java.configuration.runtimes": [
           {
             "name": "JavaSE-21",
-            "path": "/usr/local/sdkman/candidates/java/21.0.4-ms"
+            "path": "/usr/lib/jvm/msopenjdk-current"
           }
         ],
-        "maven.executable.path": "/usr/local/sdkman/candidates/maven/current/bin/mvn",
+        "maven.executable.path": "/opt/maven/bin/mvn",
         "terminal.integrated.defaultProfile.linux": "bash",
         "terminal.integrated.profiles.linux": {
           "bash": {
@@ -189,7 +189,10 @@
     "SPRING_PROFILES_ACTIVE": "dev",
     "JAVA_TOOL_OPTIONS": "-Dspring.jpa.show-sql=true -Dlogging.level.org.springframework.web=DEBUG",
     "MAVEN_OPTS": "-Xmx1024m",
-    "DOCKER_BUILDKIT": "1"
+    "DOCKER_BUILDKIT": "1",
+    "JAVA_HOME": "/usr/lib/jvm/msopenjdk-current",
+    "MAVEN_HOME": "/opt/maven",
+    "KAFKA_HOME": "/opt/kafka"
   },
 
   // Mount points

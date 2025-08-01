@@ -6,11 +6,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    env_file:
+      - .env
     volumes:
       - ../..:/workspace:cached
       - ski-shop-maven-cache:/root/.m2
       - ski-shop-node-modules:/workspace/node_modules
-      - /var/run/docker.sock:/var/run/docker-host.sock
+      # - /var/run/docker.sock:/var/run/docker.sock  # Commented out for macOS compatibility
     environment:
       - SPRING_PROFILES_ACTIVE=dev
       - POSTGRES_HOST=postgres
@@ -19,11 +21,20 @@ services:
       - ELASTICSEARCH_HOST=elasticsearch
       - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY:-}
       - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT:-}
+      - DB_USERNAME=skishop_user
+      - DB_PASSWORD=skishop_password
+      - DATABASE_USERNAME=skishop_user
+      - DATABASE_PASSWORD=skishop_password
+      - REDIS_PASSWORD=redis_password
     depends_on:
-      - postgres
-      - redis
-      - kafka
-      - elasticsearch
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
     command: sleep infinity
     networks:
       - ski-shop-network
@@ -35,11 +46,11 @@ services:
       POSTGRES_DB: skishop
       POSTGRES_USER: skishop_user
       POSTGRES_PASSWORD: skishop_password
-      POSTGRES_MULTIPLE_DATABASES: skishop_auth,skishop_user,skishop_inventory,skishop_sales,skishop_payment,skishop_point,skishop_coupon
+      # POSTGRES_MULTIPLE_DATABASES: skishop_auth,skishop_user,skishop_inventory,skishop_sales,skishop_payment,skishop_point,skishop_coupon
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ../scripts/init-databases.sql:/docker-entrypoint-initdb.d/01-init-databases.sql
-      - ../authentication-service/init-auth-db.sql:/docker-entrypoint-initdb.d/02-init-auth-db.sql
+      - ../scripts/init-databases.sql:/docker-entrypoint-initdb.d/01-init-databases.sql:ro
+      - ../authentication-service/init-auth-db.sql:/docker-entrypoint-initdb.d/02-init-auth-db.sql:ro
     ports:
       - "5432:5432"
     networks:
@@ -49,6 +60,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
 
   # Redis Cache
   redis:
@@ -61,10 +73,11 @@ services:
     networks:
       - ski-shop-network
     healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      test: ["CMD", "redis-cli", "-a", "redis_password", "ping"]
       interval: 10s
       timeout: 3s
       retries: 5
+      start_period: 20s
 
   # Apache Kafka
   zookeeper:
@@ -77,11 +90,18 @@ services:
       - zk_log:/var/lib/zookeeper/log
     networks:
       - ski-shop-network
+    healthcheck:
+      test: ["CMD", "echo", "ruok", "|", "nc", "localhost", "2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   kafka:
     image: confluentinc/cp-kafka:7.4.0
     depends_on:
-      - zookeeper
+      zookeeper:
+        condition: service_healthy
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -98,10 +118,11 @@ services:
     networks:
       - ski-shop-network
     healthcheck:
-      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      test: ["CMD", "nc", "-z", "localhost", "9092"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 40s
 
   # Elasticsearch
   elasticsearch:
@@ -122,6 +143,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+      start_period: 60s
 
   # Monitoring - Prometheus
   prometheus:

@@ -1,0 +1,45 @@
+services:
+  # API Gateway - uses shared infrastructure services
+  api-gateway:
+    build: .
+    container_name: api-gateway
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      
+      # Redis configuration - using shared Redis
+      REDIS_HOST: host.docker.internal
+      REDIS_PORT: 6379
+      
+      # Kafka configuration - using shared Kafka
+      KAFKA_BROKERS: host.docker.internal:9092
+      
+      # JWT configuration
+      JWT_ISSUER_URI: http://host.docker.internal:8080/auth/realms/skishop
+      JWT_JWK_SET_URI: http://host.docker.internal:8080/auth/realms/skishop/protocol/openid_connect/certs
+      
+      # Backend service URLs
+      AUTH_SERVICE_URL: http://host.docker.internal:8080
+      USER_SERVICE_URL: http://host.docker.internal:8081
+      INVENTORY_SERVICE_URL: http://host.docker.internal:8082
+      SALES_SERVICE_URL: http://host.docker.internal:8083
+      PAYMENT_CART_SERVICE_URL: http://host.docker.internal:8084
+      POINT_SERVICE_URL: http://host.docker.internal:8085
+      COUPON_SERVICE_URL: http://host.docker.internal:8086
+      AI_SUPPORT_SERVICE_URL: http://host.docker.internal:8087
+      
+      # JVM configuration
+      JAVA_OPTS: "-Xms256m -Xmx512m"
+    volumes:
+      - ./logs:/app/logs
+    network_mode: host
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8090/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+# API Gateway uses shared infrastructure services
+# Redis, Kafka, etc. are provided by ../.devcontainer/docker-compose.yml
+# This service connects to shared services via host network

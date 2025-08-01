@@ -4,9 +4,9 @@ spring:
   
   # Local development database settings
   datasource:
-    url: jdbc:postgresql://postgres:5432/skishop_user
-    username: skishop_user
-    password: password
+    url: ${DB_URL:jdbc:postgresql://postgres:5432/skishop_user_db}
+    username: ${DB_USERNAME:skishop_user}
+    password: ${DB_PASSWORD:skishop_password}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10

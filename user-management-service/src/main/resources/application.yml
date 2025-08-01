@@ -1,12 +1,15 @@
+server:
+  port: 8081
+
 spring:
   application:
     name: user-management-service
   
   # Database settings
   datasource:
-    url: jdbc:postgresql://localhost:5432/skishop_user
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/skishop_user_db}
     username: ${DB_USERNAME:skishop_user}
-    password: ${DB_PASSWORD:password}
+    password: ${DB_PASSWORD:skishop_password}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 20
@@ -154,12 +157,7 @@ security:
           issuer-uri: ${JWT_ISSUER_URI:http://localhost:8080/auth/realms/skishop}
           jwk-set-uri: ${JWT_JWK_SET_URI:http://localhost:8080/auth/realms/skishop/protocol/openid_connect/certs}
 
-# Server settings
-server:
-  port: ${PORT:8081}
-  servlet:
-    context-path: /api
-  compression:
+
     enabled: true
     mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
     min-response-size: 1024

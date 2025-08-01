@@ -1,4 +1,4 @@
-FROM openjdk:21-jdk-slim
+FROM eclipse-temurin:21-jre-alpine
 
 # Set working directory
 WORKDIR /app
@@ -10,11 +10,11 @@ COPY target/coupon-service-1.0.0-SNAPSHOT.jar app.jar
 RUN mkdir -p /app/logs
 
 # Expose the port
-EXPOSE 8088
+EXPOSE 8086
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-  CMD curl -f http://localhost:8088/actuator/health || exit 1
+  CMD curl -f http://localhost:8086/actuator/health || exit 1
 
 # Set JVM options
 ENV JAVA_OPTS="-Xmx1g -Xms512m -Djava.security.egd=file:/dev/./urandom"
