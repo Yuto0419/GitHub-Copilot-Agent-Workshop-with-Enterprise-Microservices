@@ -4,7 +4,7 @@
     "dockerfile": "Dockerfile",
     "context": "."
   },
-  "workspaceFolder": "/workspaces/java-skishop-microservices",
+  "workspaceFolder": "/workspaces/GitHub-Copilot-Agent-Workshop-with-Enterprise-Microservices",
 
   "customizations": {
     "vscode": {
