@@ -60,11 +60,11 @@ ENV PATH=$PATH:$MAVEN_HOME/bin
 ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-current
 ENV KAFKA_HOME=/opt/kafka
 
-# Create workspace directory
-WORKDIR /workspace
+# Create workspace directory (align with devcontainer.json workspaceFolder)
+WORKDIR /workspaces/java-skishop-microservices
 
 # Set up git safe directory, configure Maven settings, and create useful aliases
-RUN git config --global --add safe.directory /workspace \
+RUN git config --global --add safe.directory /workspaces/java-skishop-microservices \
     && mkdir -p /root/.m2 \
     && echo '<?xml version="1.0" encoding="UTF-8"?>' > /root/.m2/settings.xml \
     && echo '<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"' >> /root/.m2/settings.xml \

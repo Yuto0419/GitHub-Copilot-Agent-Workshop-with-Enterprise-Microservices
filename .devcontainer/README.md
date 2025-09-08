@@ -207,6 +207,49 @@ mvn spring-boot:run -pl authentication-service -Dspring-boot.run.jvmArguments="-
 
 ## Important Notes
 
+### New Post-create Optional Flags
+
+Post-create 処理は以下の環境変数で挙動を制御できます (devcontainer.json の `containerEnv` または `.devcontainer/.env`).
+
+| Variable | Values | Default | Description |
+|----------|--------|---------|-------------|
+| `CHECK_INFRA_SERVICES` | `true` / `false` | `true` | PostgreSQL / Redis / Kafka / Elasticsearch のヘルスチェックと Kafka トピック作成を行うか |
+| `MAVEN_GO_OFFLINE` | `once` / `always` / `false` | `once` | `mvn dependency:go-offline` の実行頻度制御 (`once` は初回のみ marker ファイル方式) |
+
+例: 迅速起動用にすべてスキップ
+
+```bash
+CHECK_INFRA_SERVICES=false MAVEN_GO_OFFLINE=false devcontainer up
+```
+
+### Troubleshooting: postCreate が失敗する / スクリプトが見つからない
+
+主な原因 (例):
+
+1. ルートディレクトリのパス差異 (`/workspaces` vs `/workspace`) による参照不一致
+2. Dev Container 設定キャッシュが古い
+3. スクリプト権限不足
+
+確認手順:
+
+```bash
+ls -1 .devcontainer/post-create.sh
+jq '.postCreateCommand' .devcontainer/devcontainer.json
+```
+
+改善策:
+
+1. 再ビルド: Command Palette > Dev Containers: Rebuild Container (Without Cache)
+2. 権限付与: `chmod +x .devcontainer/post-create.sh`
+3. 直接実行: `bash .devcontainer/post-create.sh`
+
+ログ診断ポイント:
+
+```bash
+grep -n 'post-create' .devcontainer/*.sh
+```
+
+
 1. **Initial Startup Time**: First startup takes longer due to Docker image downloads and builds
 2. **Resource Usage**: Running all services simultaneously requires 8GB+ RAM
 3. **Port Conflicts**: Ensure no local services are using the same ports
