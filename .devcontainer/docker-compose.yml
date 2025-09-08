@@ -48,9 +48,10 @@ services:
       # POSTGRES_MULTIPLE_DATABASES: skishop_auth,skishop_user,skishop_inventory,skishop_sales,skishop_payment,skishop_point,skishop_coupon
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ../scripts/init-shared-databases.sql:/docker-entrypoint-initdb.d/init-shared-databases.sql
-      - ../scripts/init-databases.sql:/docker-entrypoint-initdb.d/01-init-databases.sql:ro
-      - ../authentication-service/init-auth-db.sql:/docker-entrypoint-initdb.d/02-init-auth-db.sql:ro
+      - type: bind
+        source: ./postgres-init
+        target: /docker-entrypoint-initdb.d
+        read_only: true
     ports:
       - "5432:5432"
     networks:
