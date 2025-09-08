@@ -1,0 +1,41 @@
+services:
+  # AI Support Service - uses shared infrastructure services
+  ai-support-service:
+    build: .
+    container_name: ai-support-service
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      
+      # Azure OpenAI Configuration
+      AZURE_OPENAI_API_KEY: ${AZURE_OPENAI_API_KEY:-}
+      AZURE_OPENAI_ENDPOINT: ${AZURE_OPENAI_ENDPOINT:-}
+      AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: ${AZURE_OPENAI_CHAT_DEPLOYMENT_NAME:gpt-4.1}
+      AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME: ${AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME:text-embedding-3-small}
+      
+      # Redis configuration - using shared Redis
+      SPRING_DATA_REDIS_HOST: host.docker.internal
+      SPRING_DATA_REDIS_PORT: 6379
+      
+      # Kafka configuration - using shared Kafka
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: host.docker.internal:9092
+      
+      # JWT configuration
+      JWT_ISSUER_URI: http://host.docker.internal:8080/realms/skishop
+      JWT_JWK_SET_URI: http://host.docker.internal:8080/realms/skishop/protocol/openid_connect/certs
+      
+      # JVM configuration
+      JAVA_OPTS: "-Xms256m -Xmx1g"
+    volumes:
+      - ./logs:/app/logs
+    network_mode: host
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8087/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+# AI Support Service uses shared infrastructure services
+# Redis, Kafka, etc. are provided by ../.devcontainer/docker-compose.yml
+# This service connects to shared services via host network
