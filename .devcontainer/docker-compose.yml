@@ -152,7 +152,10 @@ services:
 
   # Monitoring - Prometheus
   prometheus:
-    image: prom/prometheus:latest
+    build:
+      context: ./prometheus-config
+      dockerfile: Dockerfile
+    image: local/prometheus:latest
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
@@ -160,7 +163,6 @@ services:
       - '--web.console.templates=/etc/prometheus/consoles'
       - '--web.enable-lifecycle'
     volumes:
-      - ../monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
     ports:
       - "9090:9090"
